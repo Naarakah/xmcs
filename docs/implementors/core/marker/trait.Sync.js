@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["xmcs"] = [{"text":"impl Sync for SubString","synthetic":true,"types":[]}];
+implementors["xmcs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"struct\" href=\"xmcs/substr/struct.SubString.html\" title=\"struct xmcs::substr::SubString\">SubString</a>","synthetic":true,"types":["xmcs::substr::SubString"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

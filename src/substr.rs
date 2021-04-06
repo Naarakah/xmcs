@@ -1,5 +1,7 @@
-//! # Substring computation module
-
+//! Check whether a sequence is a subsequence of another
+//!
+//! This module contains a structure used to precompute and the answer in 
+//! constant time whether the tail of a sequence is a subsequence of another
 
 #[doc(hidden)]
 fn distance(a: usize, b: usize) -> usize {
@@ -10,11 +12,15 @@ fn distance(a: usize, b: usize) -> usize {
     }
 }
 
-/// Given two strings `s1` and `s2` and an integer `delta`, this struct holds data used
-/// to answer the following question in constant time:
-/// for any `i`, `j` indices of `s1`, `s2` such that the distance between `i` and `j`
-/// is less than `delta` is `s1[i..]` is a substring of `s2[j..]`
-/// or `s2[j..]` a substring of `s1[i..]`,
+/// Struct used to precompute whether a sequence is a subsequence of another
+///
+/// Given two sequences `s1` and `s2` and an integer `delta`, this struct holds 
+/// data  used to answer the following question in constant time:
+///
+/// for any `i`, `j` indices of `s1`, `s2` such that the distance between 
+/// `i` and `j` is less than `delta`, is `s1[i..]` is a subsequence of 
+/// `s2[j..]` or `s2[j..]` a subsequence of `s1[i..]`.
+///
 /// It only needs to do a precomputation in time `O(|s1| * delta)` beforehand.
 ///
 /// # Examples
@@ -42,10 +48,12 @@ pub struct SubString {
 impl SubString {
 
     /// Do the precomputations and returns a struct containing the resulting data.
-    /// Use [`is_substring_at`](`SubString::is_substring_at`) on the result to
+    /// Use [`is_substring_at`] on the result to
     /// actually get the answer.
     ///
     /// The following property must hold: `||s1| - |s2|| <= delta`, otherwise panic.
+    ///
+    /// [`is_substring_at`]: `SubString::is_substring_at`
     pub fn new<T: Eq>(s1: &[T], s2: &[T], delta: usize) -> Self {
         Self::compute(s1, s2, delta)
     }
@@ -86,7 +94,9 @@ impl SubString {
 
     /// Returns whether the tail of one of the sequence is a subsequence of the tail
     /// of the other sequence, indexing from the end of the sequences.
-    /// See [`is_substring_at`](`SubString::is_substring_at`).
+    /// See [`is_substring_at`].
+    ///
+    /// [`is_substring_at`]: `SubString::is_substring_at`
     pub fn is_substring_from_end(&self, end_i: usize, end_j: usize) -> bool {
         let i = self.d1 - end_i;
         let j = self.d2 - end_j;

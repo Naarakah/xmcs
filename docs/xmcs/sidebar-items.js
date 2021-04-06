@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["dag",""],["set",""]]});
+initSidebarItems({"mod":[["set","Basic implementation of the algorithm using sets (hash tables)"],["substr","Check whether a sequence is a subsequence of another"]]});

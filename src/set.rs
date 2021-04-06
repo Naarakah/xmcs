@@ -1,10 +1,17 @@
+//! Basic implementation of the algorithm using sets (hash tables)
+//!
+//! This module contains functions to compute an extended set of maximal
+//! common subsequences of 2 or several sequences.
+//! The implementation found in this module uses `HashSet`s to contains
+//! the full set of subsequences.
+
 use std::collections::HashSet;
 use std::hash::Hash;
 
 use crate::substr::SubString;
 
 /// Compute an extended set of maximal common subsequences of all
-/// the sequences in `seqs`, of size at least `len`.
+/// the sequences in `seqs`, of sizes at least `len`.
 pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> {
     let k = seqs.len();
     let mut res = HashSet::new();
@@ -25,14 +32,13 @@ pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> 
 }
 
 /// Compute an extended set of maximal common subsequences of s1 and s2,
-/// of size at least `len`.
-////
-//// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`, `m = min(|s1|, |s2|)`,
-//// `Δ = n - len` and `δ = m - len`
+/// of sizes at least `len`.
+///
+/// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`, `m = min(|s1|, |s2|)`,
+/// `Δ = n - len` and `δ = m - len`
 pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T]) -> HashSet<Vec<T>> {
     let n = std::cmp::max(s1.len(), s2.len());
     let delta = n - len;
-
     let substring = SubString::new(s1, s2, delta);
 
     xmcs2_impl(len, s1, s2, &substring)
