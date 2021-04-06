@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["xmcs2","Compute an extended set of maximal common subsequences of s1 and s2, of size at least `len`."],["xmcsk","Compute an extended set of maximal common subsequences of all the sequences in `seqs`, of size at least `len`."]]});
