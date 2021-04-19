@@ -12,7 +12,9 @@ use crate::substr::SubString;
 
 /// Compute an extended set of maximal common subsequences of all
 /// the sequences in `seqs`, of sizes at least `len`.
-pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> {
+pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) 
+    -> HashSet<Vec<T>> 
+{
     let k = seqs.len();
     let mut res = HashSet::new();
 
@@ -22,7 +24,7 @@ pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> 
         }
     } else if k > 1 {
         let xmcs = xmcsk(len, &seqs[..(k-1)]);
-        for s in xmcs.into_iter() {
+        for s in xmcs {
             let substrings = xmcs2(len, &s, seqs[k-1]);
             res.extend(substrings.into_iter());
         }
@@ -34,9 +36,11 @@ pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> 
 /// Compute an extended set of maximal common subsequences of s1 and s2,
 /// of sizes at least `len`.
 ///
-/// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`, `m = min(|s1|, |s2|)`,
-/// `Δ = n - len` and `δ = m - len`
-pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T]) -> HashSet<Vec<T>> {
+/// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`, 
+/// `m = min(|s1|, |s2|)`, `Δ = n - len` and `δ = m - len`
+pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T])
+    -> HashSet<Vec<T>>
+{
     let n = std::cmp::max(s1.len(), s2.len());
     let delta = n - len;
     let substring = SubString::new(s1, s2, delta);
@@ -50,16 +54,17 @@ fn xmcs2_impl<T: Eq + Hash + Copy> (
     substr: &SubString
 ) -> HashSet<Vec<T>>
 {
+    let l1 = s1.len();
+    let l2 = s2.len();
     // Too much elements removed, no subsequence long enough here
-    if len > s1.len() || len > s2.len()
-        || s1.is_empty() || s2.is_empty() {
+    if len > l1 || len > l2 || l1 == 0 || l2 == 0 {
         return HashSet::new();
     }
 
     // One is a subsequence of another, return it
-    if substr.is_substring_from_end(s1.len(), s2.len()) {
+    if substr.is_substring_from_end(l1, l2) {
         let mut res = HashSet::new();
-        if s1.len() < s2.len() {
+        if l1 < l2 {
             res.insert(s1.to_vec());
         } else {
             res.insert(s2.to_vec());
@@ -71,9 +76,10 @@ fn xmcs2_impl<T: Eq + Hash + Copy> (
     let u2 = s2[0];
 
     if u1 == u2 {
-        // saturating_sub: do not undeflow at 0. The len is not important anymore
-        // when it reaches 0 so this is not an issue.
-        let res = xmcs2_impl(len.saturating_sub(1), &s1[1..], &s2[1..], substr);
+        // saturating_sub: do not undeflow at 0. The len is not 
+        // important anymore when it reaches 0 so this is not an issue
+        let len = len.saturating_sub(1);
+        let res = xmcs2_impl(len, &s1[1..], &s2[1..], substr);
         res.into_iter()
             .map(|mut s| { s.insert(0, u1); s}) // Very inefficient
             .collect::<HashSet<Vec<T>>>()
