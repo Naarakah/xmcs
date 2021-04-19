@@ -85,9 +85,14 @@ impl SubString {
     /// assert_eq!(false, res.is_substring_at(2, 4));
     /// ```
     pub fn is_substring_at(&self, i: usize, j: usize) -> bool {
-        assert!(i < self.d1);
-        assert!(j < self.d2);
+        assert!(i <= self.d1);
+        assert!(j <= self.d2);
         assert!(distance(i, j) <= self.delta);
+
+        // At least one of the sequence is empty
+        if i == self.d1 || j == self.d2 {
+            return true;
+        }
 
         self.table[self.index(i, j)]
     }
