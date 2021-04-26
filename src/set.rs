@@ -12,9 +12,7 @@ use crate::substr::SubString;
 
 /// Compute an extended set of maximal common subsequences of all
 /// the sequences in `seqs`, of sizes at least `len`.
-pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) 
-    -> HashSet<Vec<T>> 
-{
+pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]]) -> HashSet<Vec<T>> {
     let k = seqs.len();
     let mut res = HashSet::new();
 
@@ -23,9 +21,9 @@ pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]])
             res.insert(seqs[0].to_vec());
         }
     } else if k > 1 {
-        let xmcs = xmcsk(len, &seqs[..(k-1)]);
+        let xmcs = xmcsk(len, &seqs[..(k - 1)]);
         for s in xmcs {
-            let substrings = xmcs2(len, &s, seqs[k-1]);
+            let substrings = xmcs2(len, &s, seqs[k - 1]);
             res.extend(substrings.into_iter());
         }
     }
@@ -36,11 +34,9 @@ pub fn xmcsk<T: Eq + Hash + Copy>(len: usize, seqs: &[&[T]])
 /// Compute an extended set of maximal common subsequences of s1 and s2,
 /// of sizes at least `len`.
 ///
-/// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`, 
+/// Runs in `O(2^(Δ + δ) * n)` where `n = max(|s1|, |s2|)`,
 /// `m = min(|s1|, |s2|)`, `Δ = n - len` and `δ = m - len`
-pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T])
-    -> HashSet<Vec<T>>
-{
+pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T]) -> HashSet<Vec<T>> {
     let n = std::cmp::max(s1.len(), s2.len());
     let delta = n - len;
     let substring = SubString::new(s1, s2, delta);
@@ -48,12 +44,12 @@ pub fn xmcs2<T: Eq + Hash + Copy>(len: usize, s1: &[T], s2: &[T])
     xmcs2_impl(len, s1, s2, &substring)
 }
 
-fn xmcs2_impl<T: Eq + Hash + Copy> (
+fn xmcs2_impl<T: Eq + Hash + Copy>(
     len: usize,
-    s1: &[T], s2: &[T],
-    substr: &SubString
-) -> HashSet<Vec<T>>
-{
+    s1: &[T],
+    s2: &[T],
+    substr: &SubString,
+) -> HashSet<Vec<T>> {
     let l1 = s1.len();
     let l2 = s2.len();
     // Too much elements removed, no subsequence long enough here
@@ -76,12 +72,15 @@ fn xmcs2_impl<T: Eq + Hash + Copy> (
     let u2 = s2[0];
 
     if u1 == u2 {
-        // saturating_sub: do not undeflow at 0. The len is not 
+        // saturating_sub: do not undeflow at 0. The len is not
         // important anymore when it reaches 0 so this is not an issue
         let len = len.saturating_sub(1);
         let res = xmcs2_impl(len, &s1[1..], &s2[1..], substr);
         res.into_iter()
-            .map(|mut s| { s.insert(0, u1); s}) // Very inefficient
+            .map(|mut s| {
+                s.insert(0, u1);
+                s
+            }) // Very inefficient
             .collect::<HashSet<Vec<T>>>()
     } else {
         let res1 = xmcs2_impl(len, &s1[1..], s2, substr);
@@ -91,7 +90,6 @@ fn xmcs2_impl<T: Eq + Hash + Copy> (
             .collect::<HashSet<Vec<T>>>()
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -119,12 +117,7 @@ mod test {
 
     #[test]
     fn test_xmcsk() {
-        let res = xmcsk(4, &[
-            b"ADBCBAD",
-            b"ADCBACD",
-            b"ABDCABDA",
-            b"BADBCBADC"
-        ]);
+        let res = xmcsk(4, &[b"ADBCBAD", b"ADCBACD", b"ABDCABDA", b"BADBCBADC"]);
 
         let mut expected = HashSet::new();
         expected.insert(b"ADCAD".to_vec());

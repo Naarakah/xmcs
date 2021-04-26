@@ -1,16 +1,17 @@
 //! Contains types and functions used to compute an extended set of
 //! maximal common subsequences represented as a graph
-//! 
-//! This modules contains types and functions that are used to 
+//!
+//! This module contains types and functions that are used to
 //! compute an extended set of maximal common subsequences of
 //! multiple sequences, represented as a directed acyclic graph
-//! 
-//! The graph can be seen as an (not deterministic) automaton with 
-//! epsilon-transitions and no loops.
+//!
+//! The graph can be seen as an acyclic (non deterministic)
+//! automaton with epsilon-transitions.
 
 mod xmcs2;
 pub use xmcs2::xmcs2;
 pub(self) use xmcs2::xmcs2_raw;
+
 mod xmcsk;
 pub use xmcsk::xmcsk;
 
@@ -26,47 +27,34 @@ pub struct Dag<'a, T> {
     /// Index of the first node
     start: usize,
     /// Minimum size of a subsequence
-    len: usize
+    len: usize,
 }
 
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Node<'a, T> {
     max_length: usize,
     min_length: usize,
-    //cur_length: usize,
-    inner: NodeType<'a, T>
+    inner: NodeType<'a, T>,
 }
 
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 enum NodeType<'a, T> {
     Empty,
-    End {
-        suffix: &'a [T]
-    },
-    Split {
-        child1: usize,
-        child2: usize
-    },
-    Element {
-        value: T,
-        child: usize,
-    }
+    End { suffix: &'a [T] },
+    Split { child1: usize, child2: usize },
+    Element { value: T, child: usize },
 }
 
-#[derive(Debug)]
-#[derive(Clone, Copy)]
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Position(usize, usize, usize);
 
-impl<T> Dag<'_, T> 
+impl<T> Dag<'_, T>
 where
-    T: Copy 
+    T: Copy,
 {
     /// Extract one of the longest subsequence
-    /// 
-    /// Use information computed previously to return a longest common 
+    ///
+    /// Use information computed previously to return a longest common
     /// subsequence of the sequences used to build this value.
     /// Returns `None` if there is no common subsequence of length more
     /// than `len`.1
@@ -80,15 +68,10 @@ where
         Some(res)
     }
 
-    fn extract_lcs_impl(
-        &self,
-        current: &Node<T>,
-        buffer: &mut Vec<T>
-    ) {
+    fn extract_lcs_impl(&self, current: &Node<T>, buffer: &mut Vec<T>) {
         match current.inner {
             NodeType::Empty => (),
-            NodeType::End { suffix } => 
-                buffer.extend_from_slice(suffix),
+            NodeType::End { suffix } => buffer.extend_from_slice(suffix),
             NodeType::Element { value, child } => {
                 buffer.push(value);
                 self.extract_lcs_impl(&self.nodes[child], buffer);
@@ -115,13 +98,13 @@ where
         nodes.push(Node {
             max_length: 0,
             min_length: 0,
-            inner: NodeType::Empty
+            inner: NodeType::Empty,
         });
 
         Self {
             nodes,
             start: 0,
-            len
+            len,
         }
     }
 }
@@ -134,9 +117,7 @@ impl<'a, T> Dag<'a, T> {
         nodes.push(Node {
             max_length: seq.len(),
             min_length: seq.len(),
-            inner: NodeType::End {
-                suffix: seq
-            }
+            inner: NodeType::End { suffix: seq },
         });
 
         Self {
@@ -148,20 +129,21 @@ impl<'a, T> Dag<'a, T> {
 }
 
 impl<'a, T> Node<'a, T> {
-    // Change the index of the children of this node
-    // so that they are still valid if all nodes
-    // are shifted by `index` in the array of nodes.
-    // This is useful to insert a subgraph into another graph.
+    /// Change the index of the children of this node
+    /// so that they are still valid if all nodes
+    /// are shifted by `index` in the array of nodes.
+    /// This is useful to insert a subgraph into another graph.
     fn with_base_index(self, index: usize) -> Node<'a, T> {
         let node_type = match self.inner {
-            NodeType::Element { value, child } => 
-                NodeType::Element { value: value, child: child + index},
-            NodeType::Split { child1, child2 } =>
-                NodeType::Split { 
-                    child1: child1 + index,
-                    child2: child2 + index 
-                },
-            node_type => node_type
+            NodeType::Element { value, child } => NodeType::Element {
+                value: value,
+                child: child + index,
+            },
+            NodeType::Split { child1, child2 } => NodeType::Split {
+                child1: child1 + index,
+                child2: child2 + index,
+            },
+            node_type => node_type,
         };
 
         Self {

@@ -1,6 +1,6 @@
 //! Check whether a sequence is a subsequence of another
 //!
-//! This module contains a structure used to precompute and the answer in 
+//! This module contains a structure used to precompute and the answer in
 //! constant time whether the tail of a sequence is a subsequence of another
 
 #[doc(hidden)]
@@ -19,8 +19,8 @@ const fn distance(a: usize, b: usize) -> usize {
 /// this struct holds data  used to answer the following question
 /// in constant time:
 ///
-/// for any `i`, `j` indices of `s1`, `s2` such that the distance between 
-/// `i` and `j` is less than `delta`, is `s1[i..]` is a subsequence of 
+/// for any `i`, `j` indices of `s1`, `s2` such that the distance between
+/// `i` and `j` is less than `delta`, is `s1[i..]` is a subsequence of
 /// `s2[j..]` or `s2[j..]` a subsequence of `s1[i..]`.
 ///
 /// It only needs to do a precomputation in time `O(|s1| * delta)`
@@ -45,11 +45,10 @@ pub struct SubString {
     d1: usize,
     d2: usize,
     delta: usize,
-    table: Vec<bool> // TODO: use something more optimized for this?
+    table: Vec<bool>, // TODO: use something more optimized for this?
 }
 
 impl SubString {
-
     /// Do the precomputations and returns a struct containing the
     /// resulting data.
     /// Use [`is_substring_at`] on the result to get the answer.
@@ -71,7 +70,7 @@ impl SubString {
     /// If `|s2| - j < |s1| - i`, returns whether `s2[j..]` is a
     /// subsequence of `s1[i..]`
     ///
-    /// If `|s1| - i = |s2| - j`, returns whether `s1[i..]` and `s2[j..]` 
+    /// If `|s1| - i = |s2| - j`, returns whether `s1[i..]` and `s2[j..]`
     /// are equal.
     ///
     /// Runs in constant time because results are precomputed at
@@ -112,9 +111,7 @@ impl SubString {
     /// See [`is_substring_at`].
     ///
     /// [`is_substring_at`]: `SubString::is_substring_at`
-    pub fn is_substring_from_end(&self, end_i: usize, end_j: usize)
-        -> bool 
-    {
+    pub fn is_substring_from_end(&self, end_i: usize, end_j: usize) -> bool {
         let i = self.d1 - end_i;
         let j = self.d2 - end_j;
 
@@ -133,9 +130,7 @@ impl SubString {
         let mut res = Vec::new();
         res.resize(d1 * (2 * delta + 1), false);
 
-        let index = |i: usize, j: usize| {
-            Self::index_with(i, j, delta)
-        };
+        let index = |i: usize, j: usize| Self::index_with(i, j, delta);
 
         for i in (0..d1).rev() {
             // begin loop where we already have |i - j| <= delta
@@ -160,28 +155,26 @@ impl SubString {
                     // s1[d1-k..] == s2[d2-k..] iff
                     // s1[d1-k+1..] == s2[d2-k+1..] and s1[d1-k] == s2[d2-k]
                     Ordering::Equal =>
-                        res[index(i+1, j+1)] && s1[i] == s2[j],
+                        res[index(i + 1, j + 1)] && s1[i] == s2[j],
 
                     // s1[d1-1..] is a substring of s2[d2-k..] iff
                     // s1[d1-1..] is a substring of s2[d2-k+1..]
                     // or s1[d1-1] == s2[d2-k]
                     Ordering::Less if end_i == 0 =>
-                        res[index(i, j+1)] || s1[i] == s2[j],
+                        res[index(i, j + 1)] || s1[i] == s2[j],
 
                     // s1[d1-i..] is a substring of s2[d2-j..] iff
                     // s1[d1-i..] is a substring of s2[d2-j+1..] or
-                    // s1[d1-i+1..] is a substring of s2[d2-j+1..] 
+                    // s1[d1-i+1..] is a substring of s2[d2-j+1..]
                     //   and s1[d1-i] == s2[d2-j]
-                    Ordering::Less =>
-                        res[index(i, j+1)] || 
-                            (res[index(i+1, j+1)] && s1[i] == s2[j]),
+                    Ordering::Less => 
+                        res[index(i, j + 1)] || (res[index(i + 1, j + 1)] && s1[i] == s2[j]),
 
                     // etc...
                     Ordering::Greater if end_j == 0 =>
-                        res[index(i+1, j)] || s1[i] == s2[j],
+                        res[index(i + 1, j)] || s1[i] == s2[j],
                     Ordering::Greater =>
-                        res[index(i+1, j)] ||
-                            (res[index(i+1, j+1)] && s1[i] == s2[j]),
+                        res[index(i + 1, j)] || (res[index(i + 1, j + 1)] && s1[i] == s2[j]),
                 };
 
                 res[index(i, j)] = is_substr;
@@ -192,7 +185,7 @@ impl SubString {
             d1,
             d2,
             delta,
-            table: res
+            table: res,
         }
     }
 
@@ -206,13 +199,6 @@ impl SubString {
         Self::index_with(i, j, self.delta)
     }
 }
-
-
-/*
-pub struct GraphSubSequence<'a, T> {
-
-}*/
-
 
 // === Tests ===
 
@@ -237,11 +223,7 @@ mod test {
 
     #[test]
     fn test_substring_1() {
-        let res = SubString::new(
-            b"ACBBABCBCACBACBCBBABBCAC", 
-            b"ABCBABAAABACBABCABCA", 
-            8
-        );
+        let res = SubString::new(b"ACBBABCBCACBACBCBBABBCAC", b"ABCBABAAABACBABCABCA", 8);
 
         assert_eq!(false, res.is_substring_at(22, 18));
         assert_eq!(true, res.is_substring_at(21, 18));
@@ -283,5 +265,4 @@ mod test {
         assert_eq!(false, res.is_substring_at(6, 9));
         assert_eq!(true, res.is_substring_at(6, 8));
     }
-
 }
