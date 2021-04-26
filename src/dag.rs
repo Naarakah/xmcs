@@ -132,11 +132,6 @@ impl<'a, T> Dag<'a, T> {
     pub fn singleton(len: usize, seq: &'a [T]) -> Dag<'a, T> {
         let mut nodes = Vec::new();
         nodes.push(Node {
-            max_length: 0,
-            min_length: 0,
-            inner: NodeType::Empty
-        });
-        nodes.push(Node {
             max_length: seq.len(),
             min_length: seq.len(),
             inner: NodeType::End {
@@ -146,65 +141,9 @@ impl<'a, T> Dag<'a, T> {
 
         Self {
             nodes,
-            start: 1,
-            len
+            start: 0,
+            len,
         }
-    }
-}
-
-use std::fmt::Display;
-
-use std::io::{
-    Write,
-    Result
-};
-
-impl<T> Dag<'_, T> 
-where
-    T: Display
-{
-    /// Outputs code to be used with the [dot] tool to produce 
-    /// a visualisation of the current graph
-    /// 
-    /// # Errors
-    /// Forwards errors from writing into `w`.
-    /// 
-    /// [dot]: (https://graphviz.org/)
-    pub fn format_graph(&self, w: &mut impl Write) -> Result<()> {
-        writeln!(w, "digraph xmcs {{")?;
-        writeln!(w, "rankdir=LR;")?;
-
-        for (i, node) in self.nodes.iter().enumerate() {
-            write!(w, "node{} [", i)?;
-            match &node.inner {
-                NodeType::Empty =>
-                    write!(w, "shape=circle, color=red, ")?,
-                NodeType::End { suffix } => {
-                    write!(w, "shape=none, fontcolor=green, label=\"")?;
-                    for e in *suffix {
-                        write!(w, "{}", e)?;
-                    }
-                    write!(w, "\"")?;
-                }
-                _ => write!(w, "shape=point, ")?
-            }
-            if i == self.start {
-                write!(w, "style=bold, shape=circle, label=\"start\"")?;
-            }
-            writeln!(w, "];")?;
-        }
-
-        for (i, node) in self.nodes.iter().enumerate() {
-            match &node.inner {
-                NodeType::Element { child, value }
-                    => writeln!(w, "node{} -> node{} [label={}, color=blue, fontcolor=red];", i, child, value)?,
-                NodeType::Split { child1, child2 } 
-                    => writeln!(w, "node{} -> {{ node{}, node{} }};", i, child1, child2)?,
-                _ => ()
-            }
-        }
-
-        writeln!(w, "}}")
     }
 }
 
@@ -228,7 +167,14 @@ impl<'a, T> Node<'a, T> {
         Self {
             max_length: self.max_length,
             min_length: self.min_length,
-            inner: node_type
+            inner: node_type,
+        }
+    }
+
+    fn is_split_with_child(&self, index: usize) -> bool {
+        match self.inner {
+            NodeType::Split { child1, child2 } if child1 == index || child2 == index => true,
+            _ => false,
         }
     }
 }

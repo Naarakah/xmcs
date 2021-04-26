@@ -214,10 +214,29 @@ where
             (Some(idx), None) | (None, Some(idx)) =>
                 self.points_to_node(position, idx),
             
+            // (Optimization)
+            // The children are identical => point to that node
+            (Some(idx1), Some(idx2)) if idx1 == idx2 => self.points_to_node(position, idx1),
+
             // Else the node is a split node
             (Some(idx1), Some(idx2)) => {
                 let node1 = &self.nodes[idx1];
                 let node2 = &self.nodes[idx2];
+
+                // (Optimization)
+                // If we are in a case like this:
+                //       1 __ ...
+                //      /  \
+                // Self     \
+                //      \___ 2 ...
+                // Then node 1 has the same children, we can use it
+                // instead of inserting a new node.
+                if node1.is_split_with_child(idx2) {
+                    return self.points_to_node(position, idx1);
+                }
+                if node2.is_split_with_child(idx1) {
+                    return self.points_to_node(position, idx2);
+                }
 
                 let max_length = max(node1.max_length, node2.max_length);
                 let min_length = min(node1.min_length, node2.min_length);
