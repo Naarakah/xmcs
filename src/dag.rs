@@ -14,6 +14,9 @@ pub(self) use xmcs2::xmcs2_raw;
 mod xmcsk;
 pub use xmcsk::xmcsk;
 
+#[cfg(feature = "graphviz")]
+mod render;
+
 use std::collections::HashSet;
 
 /// Struct used to store a graph representing a set of sequences.
